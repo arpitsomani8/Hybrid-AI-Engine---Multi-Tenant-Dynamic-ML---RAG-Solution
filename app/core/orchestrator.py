@@ -30,6 +30,11 @@ class HybridAIEngine:
         self.pinecone = PineconeManager()
         self.synthesizer = ContextSynthesizer()
         self.router = IntelligentRouter()
+        # Register baseline stats for pre-loaded models in schema validator
+        for t_id, prep in self.ml_pipeline.preprocessors.items():
+            if prep.baseline_stats:
+                self.schema_validator.set_baseline(t_id, prep.baseline_stats)
+
         logger.info("Hybrid AI Engine successfully initialized.")
 
     def process_query(self, tenant_id: str, request_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -52,6 +57,10 @@ class HybridAIEngine:
         # ROUTE 1: CLASSICAL TABULAR ML
         # -------------------------------------------------------------
         if route == ExecutionRoute.CLASSICAL_ML:
+            # Ensure baseline stats are registered in validator for drift detection
+            prep = self.ml_pipeline.preprocessors.get(tenant_id)
+            if prep and prep.baseline_stats and tenant_id not in self.schema_validator._baselines:
+                self.schema_validator.set_baseline(tenant_id, prep.baseline_stats)
             # Validate input against dynamic schema
             val_res = self.schema_validator.validate(tenant_id, request_data)
             if not val_res.is_valid:
