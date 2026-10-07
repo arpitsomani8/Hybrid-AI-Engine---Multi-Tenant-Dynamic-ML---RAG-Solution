@@ -33,15 +33,19 @@ def seed_remote():
     r = requests.post(f"{RENDER_URL}/api/v1/data/ingest", json={"records": records}, headers={"X-Tenant-ID": TENANT})
     print("Ingest Result:", r.json())
 
-    # Trigger LightGBM Training on Render app
+    # Trigger LightGBM Training on Render app (fast 1-second training for free tier CPU)
     print(f"Triggering LightGBM Training on Render for '{TENANT}'...")
     train_req = {
         "target_column": "is_fraud",
         "task_type": "binary",
-        "tune_hyperparameters": True
+        "tune_hyperparameters": False
     }
     r_train = requests.post(f"{RENDER_URL}/api/v1/models/train", json=train_req, headers={"X-Tenant-ID": TENANT})
-    print("Train Result:", r_train.json())
+    print("Train Status Code:", r_train.status_code)
+    if r_train.status_code == 200:
+        print("Train Result:", r_train.json())
+    else:
+        print("Train Response Text:", r_train.text)
 
     print("\n[OK] Render container is now seeded and trained! Refresh your browser tab to see 160 samples & LightGBM Ready!")
 
