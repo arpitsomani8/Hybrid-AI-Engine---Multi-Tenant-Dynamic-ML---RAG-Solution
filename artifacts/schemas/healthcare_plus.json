@@ -1,0 +1,33 @@
+{
+  "description": "Healthcare Patient Risk & Admission Schema",
+  "target_column": "requires_icu",
+  "task_type": "binary",
+  "fields": {
+    "patient_age": {
+      "type": "int",
+      "ge": 0,
+      "le": 120,
+      "description": "Patient age in years"
+    },
+    "blood_pressure_sys": {
+      "type": "float",
+      "ge": 50.0,
+      "le": 300.0,
+      "description": "Systolic blood pressure"
+    },
+    "prior_admissions": {
+      "type": "int",
+      "ge": 0,
+      "description": "Admissions in last 12 months"
+    },
+    "triage_level": {
+      "type": "str",
+      "allowed": [
+        "routine",
+        "urgent",
+        "critical"
+      ],
+      "description": "Triage severity"
+    }
+  }
+}

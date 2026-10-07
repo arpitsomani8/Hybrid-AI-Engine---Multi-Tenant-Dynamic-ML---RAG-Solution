@@ -1,0 +1,29 @@
+{
+  "description": "E-Commerce Customer Churn & Lifetime Value Schema",
+  "target_column": "will_churn",
+  "task_type": "binary",
+  "fields": {
+    "days_since_last_purchase": {
+      "type": "int",
+      "ge": 0
+    },
+    "average_order_value": {
+      "type": "float",
+      "ge": 0.0
+    },
+    "support_tickets_opened": {
+      "type": "int",
+      "ge": 0
+    },
+    "loyalty_tier": {
+      "type": "str",
+      "default": "standard",
+      "allowed": [
+        "standard",
+        "silver",
+        "gold",
+        "vip"
+      ]
+    }
+  }
+}

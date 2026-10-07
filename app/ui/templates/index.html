@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hybrid AI Engine | Multi-Tenant Enterprise Platform</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="logo-title">HYBRID AI ENGINE</h1>
+        <span class="logo-subtitle">Multi-Tenant Dynamic ML & Pinecone RAG Platform</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Pinecone Live Connection Indicator -->
+      <div class="status-pill" id="pineconeStatusBadge">
+        <span class="pulse-dot"></span>
+        <span id="pineconeStatusText">Checking Pinecone...</span>
+      </div>
+
+      <!-- Tenant Switcher Dropdown -->
+      <div class="tenant-selector-wrapper">
+        <label for="tenantSelect" class="selector-label">Tenant Partition:</label>
+        <select id="tenantSelect" class="tenant-dropdown">
+          <option value="fintech_corp">fintech_corp</option>
+          <option value="ecommerce_inc">ecommerce_inc</option>
+        </select>
+        <button id="refreshTenantBtn" class="btn-icon" title="Refresh Tenant Status">↻</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tenant Health & Metric Overview Bar -->
+  <section class="tenant-health-bar">
+    <div class="metric-card" id="cardActiveTenant">
+      <div class="metric-header">
+        <span class="metric-label">Active Tenant</span>
+        <span class="badge badge-indigo" id="activeTenantBadge">fintech_corp</span>
+      </div>
+      <div class="metric-value font-mono" id="tenantPartitionId">fintech_corp</div>
+      <div class="metric-subtext">Namespace Isolated Partition</div>
+    </div>
+
+    <div class="metric-card" id="cardTabularData">
+      <div class="metric-header">
+        <span class="metric-label">Tabular History</span>
+        <span class="badge" id="dataThresholdBadge">Checking...</span>
+      </div>
+      <div class="metric-value font-mono" id="dataSampleCount">0 samples</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="sampleProgressFill" style="width: 0%"></div>
+      </div>
+      <div class="metric-subtext" id="sampleThresholdText">Min. 100 samples required for ML</div>
+    </div>
+
+    <div class="metric-card" id="cardModelStatus">
+      <div class="metric-header">
+        <span class="metric-label">Classical ML Status</span>
+        <span class="badge" id="modelStatusBadge">Evaluating...</span>
+      </div>
+      <div class="metric-value" id="modelStatusText">Cold-Start Active</div>
+      <div class="metric-subtext" id="modelDetailsSubtext">Routing fallback to Pinecone RAG</div>
+    </div>
+
+    <div class="metric-card" id="cardPineconeStats">
+      <div class="metric-header">
+        <span class="metric-label">Pinecone Namespace</span>
+        <span class="badge badge-emerald">Live Serverless</span>
+      </div>
+      <div class="metric-value font-mono" id="pineconeVectorCount">0 vectors</div>
+      <div class="metric-subtext font-mono" id="pineconeNamespaceName">namespace: fintech_corp</div>
+    </div>
+  </section>
+
+  <!-- Interactive Routing Topology Visualizer -->
+  <section class="routing-topology-panel">
+    <div class="topology-header">
+      <span class="topology-title">DYNAMIC INTELLIGENT ROUTING TOPOLOGY</span>
+      <span class="topology-status font-mono" id="routeActiveStatus">Engine Ready</span>
+    </div>
+    <div class="pipeline-diagram">
+      <div class="pipeline-node" id="nodeInput">
+        <div class="node-icon">📥</div>
+        <div class="node-label">Inbound Request</div>
+        <div class="node-sub font-mono">X-Tenant-ID</div>
+      </div>
+
+      <div class="pipeline-connector" id="conn1"></div>
+
+      <div class="pipeline-node" id="nodeRouter">
+        <div class="node-icon">🔀</div>
+        <div class="node-label">Intelligent Router</div>
+        <div class="node-sub">Intent Classifier</div>
+      </div>
+
+      <div class="pipeline-branch">
+        <!-- Route A: Classical ML -->
+        <div class="branch-path" id="branchML">
+          <div class="pipeline-connector-line"></div>
+          <div class="pipeline-node route-node" id="nodeML">
+            <div class="node-icon">⚡</div>
+            <div class="node-label">Classical Tabular ML</div>
+            <div class="node-sub">LightGBM Booster</div>
+          </div>
+        </div>
+
+        <!-- Route B: Cold Start Fallback -->
+        <div class="branch-path" id="branchCold">
+          <div class="pipeline-connector-line"></div>
+          <div class="pipeline-node route-node" id="nodeCold">
+            <div class="node-icon">🛡️</div>
+            <div class="node-label">Cold-Start Fallback</div>
+            <div class="node-sub">Pinecone RAG + LLM</div>
+          </div>
+        </div>
+
+        <!-- Route C: Unstructured NL Query -->
+        <div class="branch-path" id="branchNL">
+          <div class="pipeline-connector-line"></div>
+          <div class="pipeline-node route-node" id="nodeNL">
+            <div class="node-icon">💬</div>
+            <div class="node-label">Unstructured RAG</div>
+            <div class="node-sub">Pinecone Namespace</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-connector" id="conn2"></div>
+
+      <div class="pipeline-node" id="nodeOutput">
+        <div class="node-icon">🎯</div>
+        <div class="node-label">Unified Response</div>
+        <div class="node-sub font-mono" id="nodeLatency">0 ms</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabbed Operations Workspace -->
+  <main class="workspace-container">
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="tabSandbox" id="btnTabSandbox">
+        <span>🎮</span> Live Hybrid Sandbox
+      </button>
+      <button class="tab-btn" data-tab="tabML" id="btnTabML">
+        <span>⚙️</span> Tabular ML Studio (LightGBM)
+      </button>
+      <button class="tab-btn" data-tab="tabRAG" id="btnTabRAG">
+        <span>🌲</span> Pinecone Knowledge Base
+      </button>
+      <button class="tab-btn" data-tab="tabSchema" id="btnTabSchema">
+        <span>📋</span> Dynamic Schema Registry
+      </button>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: LIVE HYBRID SANDBOX -->
+    <!-- ================================================================= -->
+    <div class="tab-pane active" id="tabSandbox">
+      <div class="sandbox-grid">
+        <!-- Request Panel -->
+        <div class="panel request-panel">
+          <div class="panel-header">
+            <span class="panel-title">Payload Simulator</span>
+            <div class="preset-buttons">
+              <button class="btn-xs" id="btnPresetCold">Preset: Cold-Start Payload</button>
+              <button class="btn-xs" id="btnPresetML">Preset: ML Post-Training</button>
+              <button class="btn-xs" id="btnPresetNL">Preset: Natural Language Query</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="queryPayloadInput">JSON Payload (Structured or Natural Language):</label>
+            <textarea id="queryPayloadInput" class="code-editor" rows="11" spellcheck="false"></textarea>
+          </div>
+
+          <div class="panel-actions">
+            <button id="btnExecutePredict" class="btn btn-primary">
+              <span class="btn-icon-play">▶</span> Execute Hybrid Inference
+            </button>
+            <span class="form-help font-mono">Routes automatically based on model status & query format</span>
+          </div>
+        </div>
+
+        <!-- Response Panel -->
+        <div class="panel response-panel">
+          <div class="panel-header">
+            <span class="panel-title">Inference Output & Calibrated Synthesis</span>
+            <span class="badge font-mono" id="responseRouteBadge">Awaiting query</span>
+          </div>
+
+          <!-- Highlight Card -->
+          <div class="synthesis-summary-card" id="synthesisSummaryCard">
+            <div class="summary-top">
+              <span class="summary-mode-title" id="summaryTitle">Result Assessment</span>
+              <span class="summary-confidence" id="summaryConfidence">--% Confidence</span>
+            </div>
+            <div class="summary-body" id="summaryBody">
+              Run an inference query to view calibrated predictions, drift detections, or RAG LLM synthesized policy guidance.
+            </div>
+          </div>
+
+          <!-- Raw Output Explorer -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <div class="editor-header">
+              <span class="editor-title">Unified JSON Output</span>
+              <span class="font-mono text-muted text-xs" id="responseLatencyText">Latency: --</span>
+            </div>
+            <pre class="code-preview font-mono" id="rawResponseOutput">{}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: TABULAR ML STUDIO (LIGHTGBM + OPTUNA) -->
+    <!-- ================================================================= -->
+    <div class="tab-pane" id="tabML">
+      <div class="ml-studio-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Automated LightGBM Training Pipeline</span>
+            <span class="badge badge-indigo">Optuna Ready</span>
+          </div>
+
+          <p class="panel-desc">
+            Trains an optimized LightGBM model for this tenant when sample count reaches &ge; 100 rows.
+            Automates categorical encoding, median/mode imputation, and early stopping.
+          </p>
+
+          <div class="training-trigger-box">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Target Column:</label>
+                <input type="text" id="targetColInput" class="form-control font-mono" value="is_fraud">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Task Type:</label>
+                <select id="taskTypeSelect" class="form-control">
+                  <option value="binary">Binary Classification</option>
+                  <option value="regression">Regression</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-checkbox">
+              <input type="checkbox" id="chkOptuna" checked>
+              <label for="chkOptuna">Enable Optuna Hyperparameter Optimization (Multi-trial search)</label>
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <button id="btnTrainModel" class="btn btn-success">
+                <span>⚡</span> Run Automated Tabular ML Training
+              </button>
+            </div>
+          </div>
+
+          <!-- Dataset Preview -->
+          <div style="margin-top: 1.5rem;">
+            <div class="panel-header">
+              <span class="panel-title">Ingested Dataset Preview</span>
+              <span class="font-mono text-xs text-muted" id="datasetRowsTotal">0 rows</span>
+            </div>
+            <div class="table-responsive" id="datasetTableWrapper">
+              <table class="data-table" id="datasetTable">
+                <thead><tr><th>No records loaded</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Model Evaluation & Metrics Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Model Registry & Performance Metrics</span>
+            <span class="badge" id="mlMetricsStatusBadge">No Model</span>
+          </div>
+
+          <div id="mlMetricsContainer" style="display: none;">
+            <div class="metrics-grid">
+              <div class="mini-metric">
+                <span class="mini-label">AUC / Metric</span>
+                <span class="mini-val font-mono" id="metricAUC">--</span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Validation Accuracy</span>
+                <span class="mini-val font-mono" id="metricAccuracy">--</span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Best Iteration</span>
+                <span class="mini-val font-mono" id="metricBestIter">--</span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Training Samples</span>
+                <span class="mini-val font-mono" id="metricSamples">--</span>
+              </div>
+            </div>
+
+            <div class="feature-importance-section" style="margin-top: 1.5rem;">
+              <div class="panel-title" style="margin-bottom: 0.75rem;">Feature Importance (Gain)</div>
+              <div id="featureImportanceBars" class="importance-bars"></div>
+            </div>
+          </div>
+
+          <div id="noModelPlaceholder" class="empty-state">
+            <div class="empty-icon">📊</div>
+            <div class="empty-title">No Model Trained Yet for this Tenant</div>
+            <div class="empty-desc">Tenant is currently operating under Cold-Start RAG Fallback mode. Click the training button above once &ge; 100 samples are ingested.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: PINECONE KNOWLEDGE BASE -->
+    <!-- ================================================================= -->
+    <div class="tab-pane" id="tabRAG">
+      <div class="rag-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Index Policy Document into Pinecone</span>
+            <span class="badge badge-emerald">Strict Namespace</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="docIdInput">Document ID:</label>
+            <input type="text" id="docIdInput" class="form-control font-mono" placeholder="e.g. rule_spend_limit_01">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="docCategoryInput">Category / Metadata:</label>
+            <input type="text" id="docCategoryInput" class="form-control" placeholder="compliance, underwriting, security">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="docTextInput">Institutional Directive / Knowledge Content:</label>
+            <textarea id="docTextInput" class="form-control" rows="4" placeholder="Enter institutional rules, policies, or domain knowledge..."></textarea>
+          </div>
+
+          <button id="btnIndexDoc" class="btn btn-primary">
+            <span>🌲</span> Index into Pinecone Namespace
+          </button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Test Vector Similarity Search</span>
+            <span class="badge font-mono" id="vectorSearchNamespaceBadge">namespace: fintech_corp</span>
+          </div>
+
+          <div class="search-input-row">
+            <input type="text" id="vectorSearchInput" class="form-control" placeholder="Search institutional policies...">
+            <button id="btnVectorSearch" class="btn btn-secondary">Search</button>
+          </div>
+
+          <div class="vector-results-list" id="vectorResultsList">
+            <div class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <div class="empty-desc">Enter a query to inspect cosine similarity matches in this tenant's Pinecone partition.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: DYNAMIC SCHEMA REGISTRY -->
+    <!-- ================================================================= -->
+    <div class="tab-pane" id="tabSchema">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Tenant Dynamic Schema Definition</span>
+          <button id="btnSaveSchema" class="btn btn-primary btn-sm">Update Schema</button>
+        </div>
+        <p class="panel-desc">
+          Defines the input/output schema enforced dynamically at runtime with Pydantic v2.
+          Validates structured queries and drives drift baseline detection.
+        </p>
+
+        <textarea id="schemaDefinitionEditor" class="code-editor" rows="16" spellcheck="false"></textarea>
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

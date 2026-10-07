@@ -1,0 +1,22 @@
+{
+  "description": "Alpha Corp Credit Evaluation",
+  "fields": {
+    "credit_score": {
+      "type": "int",
+      "ge": 300,
+      "le": 850
+    },
+    "debt_to_income": {
+      "type": "float",
+      "ge": 0.0
+    },
+    "employment_status": {
+      "type": "str",
+      "allowed": [
+        "employed",
+        "self_employed",
+        "unemployed"
+      ]
+    }
+  }
+}

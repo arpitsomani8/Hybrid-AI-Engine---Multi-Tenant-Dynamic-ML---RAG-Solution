@@ -1,0 +1,18 @@
+{
+  "description": "Test dynamic schema",
+  "target_column": null,
+  "task_type": "binary",
+  "fields": {
+    "amount": {
+      "type": "float",
+      "ge": 0.0
+    },
+    "status": {
+      "type": "str",
+      "allowed": [
+        "active",
+        "suspended"
+      ]
+    }
+  }
+}

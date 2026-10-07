@@ -1,0 +1,31 @@
+{
+  "description": "Fintech Fraud & Risk Assessment Schema",
+  "target_column": "is_fraud",
+  "task_type": "binary",
+  "fields": {
+    "account_age_days": {
+      "type": "int",
+      "ge": 0,
+      "description": "Age of the account in days"
+    },
+    "transaction_velocity_24h": {
+      "type": "float",
+      "ge": 0.0,
+      "description": "Total spend in last 24 hours"
+    },
+    "failed_login_attempts": {
+      "type": "int",
+      "ge": 0,
+      "description": "Failed logins in last hour"
+    },
+    "risk_score_tier": {
+      "type": "str",
+      "default": "medium",
+      "allowed": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  }
+}
