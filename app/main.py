@@ -19,7 +19,18 @@ logger = logging.getLogger("HybridAIEngine.App")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing Hybrid AI Engine state...")
-    app.state.engine = HybridAIEngine()
+    engine = HybridAIEngine()
+    
+    # Auto-seed baseline multi-tenant data & LightGBM model if running on a fresh container
+    if not engine.ml_pipeline.has_model("fintech_corp"):
+        try:
+            logger.info("Fresh container startup detected. Auto-seeding multi-tenant datasets & LightGBM model...")
+            from scripts.seed_demo_data import seed
+            seed()
+        except Exception as e:
+            logger.error(f"Auto-seeding during container startup failed: {e}")
+
+    app.state.engine = engine
     yield
     logger.info("Shutting down Hybrid AI Engine...")
 

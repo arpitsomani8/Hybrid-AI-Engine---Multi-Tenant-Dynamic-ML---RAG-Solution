@@ -91,6 +91,10 @@ def seed():
     df_fintech.to_csv(fintech_csv, index=False)
     print(f"  [OK] Saved {N1} tabular records to {fintech_csv}")
 
+    # 4. Train LightGBM model for fintech_corp
+    engine.train_model(tenant_1, df_fintech, target_col="is_fraud", task="binary", tune_hyperparameters=False)
+    print(f"  [OK] Trained baseline LightGBM model for {tenant_1}")
+
     # =========================================================================
     # TENANT 2: ecommerce_inc (E-Commerce Customer Retention & Cold-Start)
     # =========================================================================
