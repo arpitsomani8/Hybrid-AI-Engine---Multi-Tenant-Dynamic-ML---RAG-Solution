@@ -107,16 +107,32 @@ class DynamicSchemaRegistry:
         return model_cls
 
     def get_model(self, tenant_id: str) -> Optional[Type[BaseModel]]:
+        if tenant_id not in self._models:
+            self.has_schema(tenant_id)
         return self._models.get(tenant_id)
 
     def get_raw_definition(self, tenant_id: str) -> Optional[Dict[str, Any]]:
+        if tenant_id not in self._raw_definitions:
+            self.has_schema(tenant_id)
         return self._raw_definitions.get(tenant_id)
 
     def has_schema(self, tenant_id: str) -> bool:
-        return tenant_id in self._models
+        if tenant_id in self._models:
+            return True
+        schema_path = self.storage_dir / f"{tenant_id}.json"
+        if schema_path.exists():
+            try:
+                with open(schema_path, "r", encoding="utf-8") as f:
+                    schema_def = json.load(f)
+                self.register_tenant_schema(tenant_id, schema_def, persist=False)
+                return True
+            except Exception as e:
+                logger.error(f"Failed to load schema dynamically from {schema_path}: {e}")
+        return False
 
     def list_tenants(self) -> List[str]:
-        return list(self._models.keys())
+        disk_tenants = [p.stem for p in self.storage_dir.glob("*.json")]
+        return sorted(list(set(list(self._models.keys()) + disk_tenants)))
 
     def delete_schema(self, tenant_id: str):
         if tenant_id in self._models:

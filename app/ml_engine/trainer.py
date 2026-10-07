@@ -169,10 +169,10 @@ class AutomatedMLPipeline:
         )
 
     def predict(self, tenant_id: str, features_dict: Dict[str, Any]) -> Dict[str, Any]:
-        booster = self.cached_models.get(tenant_id)
-        if not booster:
+        if not self.has_model(tenant_id):
             raise RuntimeError(f"No trained ML model found for tenant '{tenant_id}'")
 
+        booster = self.cached_models[tenant_id]
         preprocessor = self.preprocessors[tenant_id]
         meta = self.cached_metadata[tenant_id]
         expected_features = meta["features"]
@@ -203,4 +203,20 @@ class AutomatedMLPipeline:
             }
 
     def has_model(self, tenant_id: str) -> bool:
-        return tenant_id in self.cached_models
+        if tenant_id in self.cached_models:
+            return True
+        if self.registry.has_model(tenant_id):
+            try:
+                booster = self.registry.load_model(tenant_id)
+                meta = self.registry.load_metadata(tenant_id)
+                prep_state = self.registry.load_preprocessor_state(tenant_id)
+                if booster and meta and prep_state:
+                    self.cached_models[tenant_id] = booster
+                    self.cached_metadata[tenant_id] = meta
+                    prep = TabularPreprocessor()
+                    prep.from_dict(prep_state)
+                    self.preprocessors[tenant_id] = prep
+                    return True
+            except Exception as e:
+                logger.error(f"Failed to dynamically load model for tenant '{tenant_id}': {e}")
+        return False
